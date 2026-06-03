@@ -16,7 +16,12 @@ const parser = new Parser({
 });
 
 const port = Number(process.env.PORT || 3000);
-const isVercelDeployment = Boolean(process.env.VERCEL);
+const isVercelDeployment = Boolean(
+  process.env.VERCEL_ENV ||
+  process.env.VERCEL_URL ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.NOW_REGION
+);
 const rootDir = __dirname;
 const dataDir = path.join(rootDir, 'data');
 const dbPath = isVercelDeployment ? path.join(os.tmpdir(), 'veille.db') : path.join(dataDir, 'veille.db');
