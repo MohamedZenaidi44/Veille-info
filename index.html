@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Veille Info Studio</title>
+    <meta
+      name="description"
+      content="Agrégateur intelligent de veille informationnelle pour la tech, la cybersécurité, l'IA et l'actualité numérique."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-card">
+          <div class="brand-mark">VI</div>
+          <div>
+            <p class="eyebrow">Veille informationnelle</p>
+            <h1>Veille Info Studio</h1>
+          </div>
+        </div>
+
+        <div class="sidebar-meta panel panel-soft">
+          <div>
+            <span class="meta-label">Synchronisation</span>
+            <strong id="syncStatus">En attente</strong>
+          </div>
+          <div>
+            <span class="meta-label">Dernière mise à jour</span>
+            <strong id="lastSync">-</strong>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a href="#dashboard">Tableau de bord</a>
+          <a href="#feed">Flux</a>
+          <a href="#sources">Sources surveillées</a>
+          <a href="#trends">Tendances</a>
+          <a href="#analytics">Analytics</a>
+          <a href="#history">Historique</a>
+          <a href="#settings">Préférences</a>
+        </nav>
+
+        <div class="sidebar-footer panel panel-soft">
+          <p class="eyebrow">Préconfiguré</p>
+          <strong>RSS, favoris, recherche, OPML, notifications</strong>
+          <p>Inspiré de tableaux de bord premium, optimisé pour la veille quotidienne.</p>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar panel">
+          <div>
+            <p class="eyebrow">Dashboard analytique</p>
+            <h2>Centralisez vos signaux faibles et vos sources métier</h2>
+          </div>
+          <div class="topbar-actions">
+            <label class="search-box">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 1 0 4.11 11.56l4.41 4.4 1.42-1.42-4.4-4.41A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/></svg>
+              <input id="searchInput" type="search" placeholder="Rechercher un article, un tag, une source..." />
+            </label>
+            <button id="refreshNow" class="btn btn-primary" type="button">Actualiser</button>
+            <button id="themeToggle" class="btn btn-ghost" type="button">Mode clair</button>
+          </div>
+        </header>
+
+        <section id="dashboard" class="hero panel">
+          <div class="hero-copy">
+            <p class="eyebrow">Veille active</p>
+            <h3>Surveillez la cybersécurité, l'IA, le développement et les tendances tech en un seul endroit.</h3>
+            <p>
+              Agrégation RSS/Atom, scoring de pertinence, favoris, historique et vues analytiques.
+              Le tout avec actualisation automatique et stockage local des préférences.
+            </p>
+            <div class="hero-actions">
+              <button id="autoRefreshToggle" class="btn btn-secondary" type="button">Auto-refresh: actif</button>
+              <button id="exportOpml" class="btn btn-ghost" type="button">Exporter OPML</button>
+              <label class="btn btn-ghost file-button">
+                Importer OPML
+                <input id="importOpml" type="file" accept=".opml,.xml" />
+              </label>
+            </div>
+          </div>
+
+          <div class="hero-metrics panel-soft">
+            <div class="metric-mini">
+              <span>Articles importants</span>
+              <strong id="heroImportant">0</strong>
+            </div>
+            <div class="metric-mini">
+              <span>Sources actives</span>
+              <strong id="heroSources">0</strong>
+            </div>
+            <div class="metric-mini">
+              <span>Score moyen</span>
+              <strong id="heroScore">0</strong>
+            </div>
+            <div class="metric-mini">
+              <span>Alertes</span>
+              <strong id="heroAlerts">0</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="stats-grid" id="statsGrid"></section>
+
+        <section class="control-bar panel" aria-label="Filtres de veille">
+          <div class="control-group">
+            <label>
+              Catégorie
+              <select id="categoryFilter"></select>
+            </label>
+            <label>
+              Source
+              <select id="sourceFilter"></select>
+            </label>
+            <label>
+              Période
+              <select id="dateFilter">
+                <option value="all">Toutes les dates</option>
+                <option value="24h">24 dernières heures</option>
+                <option value="7d">7 derniers jours</option>
+                <option value="30d">30 derniers jours</option>
+              </select>
+            </label>
+            <label>
+              Score
+              <select id="scoreSort">
+                <option value="score-desc">Décroissant</option>
+                <option value="score-asc">Croissant</option>
+              </select>
+            </label>
+            <label class="check-inline"><input id="unreadOnly" type="checkbox" /> Non lus</label>
+            <label class="check-inline"><input id="favoritesOnly" type="checkbox" /> Favoris</label>
+          </div>
+          <div class="control-group control-group-right">
+            <button id="clearFilters" class="btn btn-ghost" type="button">Réinitialiser</button>
+            <button id="toggleNotifications" class="btn btn-secondary" type="button">Notifications</button>
+          </div>
+        </section>
+
+        <section id="feed" class="feed-layout">
+          <div class="panel article-panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Fil de veille</p>
+                <h3>Articles les plus récents</h3>
+              </div>
+              <span class="section-note" id="resultCount">0 articles</span>
+            </div>
+            <div id="feedList" class="feed-list"></div>
+          </div>
+
+          <div class="side-stack">
+            <section class="panel compact-panel" id="trendingCard">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Tendances</p>
+                  <h3>Tags dominants</h3>
+                </div>
+              </div>
+              <div id="trendTags" class="chip-cloud"></div>
+            </section>
+
+            <section class="panel compact-panel" id="summaryCard">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Vue rapide</p>
+                  <h3>Catégories surveillées</h3>
+                </div>
+              </div>
+              <div id="categorySummary" class="category-bars"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="sources" class="panel section-block">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Sources surveillées</p>
+              <h3>Ajouter, désactiver ou supprimer des flux</h3>
+            </div>
+            <span class="section-note">OPML, RSS, Atom, URLs manuelles</span>
+          </div>
+
+          <form id="addSourceForm" class="source-form">
+            <label>
+              Nom de la source
+              <input id="sourceName" type="text" placeholder="Ex. Dark Reading" required />
+            </label>
+            <label>
+              URL du flux
+              <input id="sourceUrl" type="url" placeholder="https://example.com/feed.xml" required />
+            </label>
+            <label>
+              Catégorie
+              <select id="sourceCategory"></select>
+            </label>
+            <label>
+              Icône
+              <input id="sourceIcon" type="text" maxlength="4" placeholder="DR" />
+            </label>
+            <button class="btn btn-primary source-submit" type="submit">Ajouter la source</button>
+          </form>
+
+          <div id="sourcesList" class="source-grid"></div>
+        </section>
+
+        <section id="trends" class="panel section-block">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Tendances</p>
+              <h3>Ce qui monte maintenant</h3>
+            </div>
+            <span class="section-note">Mots-clés et répartition des contenus</span>
+          </div>
+
+          <div class="trends-layout">
+            <div class="panel-soft chart-card">
+              <h4>Répartition par catégorie</h4>
+              <div id="categoryChart" class="chart-bars"></div>
+            </div>
+            <div class="panel-soft chart-card">
+              <h4>Publications sur 14 jours</h4>
+              <div id="dailyChart" class="chart-bars chart-bars-line"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="analytics" class="panel section-block">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Analytics</p>
+              <h3>Vue analytique simple et lisible</h3>
+            </div>
+            <span class="section-note">Score moyen, lecture, favoris, performance des flux</span>
+          </div>
+          <div id="analyticsStats" class="analytics-grid"></div>
+        </section>
+
+        <section id="history" class="panel section-block">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Historique</p>
+              <h3>Consultations récentes</h3>
+            </div>
+            <span class="section-note">Suivi local des lectures</span>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+
+        <section id="settings" class="panel section-block">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Préférences</p>
+              <h3>Personnalisation et stockage local</h3>
+            </div>
+          </div>
+          <div class="settings-grid">
+            <div class="panel-soft settings-card">
+              <h4>Mode de travail</h4>
+              <p>Le thème, les filtres et l'auto-refresh sont mémorisés localement.</p>
+            </div>
+            <div class="panel-soft settings-card">
+              <h4>Import / export</h4>
+              <p>Gardez vos abonnements synchronisés via OPML.</p>
+            </div>
+            <div class="panel-soft settings-card">
+              <h4>Notifications</h4>
+              <p>Activez les alertes de nouvelles publications importantes.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="articleModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal></div>
+      <article class="modal-card panel">
+        <button class="modal-close btn btn-ghost" type="button" data-close-modal>Fermer</button>
+        <div id="modalContent"></div>
+      </article>
+    </div>
+
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>

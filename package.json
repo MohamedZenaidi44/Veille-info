@@ -1,0 +1,20 @@
+{
+  "name": "veille-informationnelle",
+  "version": "1.0.0",
+  "description": "Site de veille informationnelle moderne avec agrégation RSS, favoris, recherche et analytics.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "rss-parser": "^3.13.0",
+    "sql.js": "^1.11.0"
+  }
+}
