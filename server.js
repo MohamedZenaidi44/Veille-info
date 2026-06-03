@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const initSqlJs = require('sql.js');
 const Parser = require('rss-parser');
 
@@ -15,11 +16,14 @@ const parser = new Parser({
 });
 
 const port = Number(process.env.PORT || 3000);
+const isVercelDeployment = Boolean(process.env.VERCEL);
 const rootDir = __dirname;
 const dataDir = path.join(rootDir, 'data');
-const dbPath = path.join(dataDir, 'veille.db');
+const dbPath = isVercelDeployment ? path.join(os.tmpdir(), 'veille.db') : path.join(dataDir, 'veille.db');
 
-fs.mkdirSync(dataDir, { recursive: true });
+if (!isVercelDeployment) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
@@ -420,6 +424,8 @@ async function bootstrap() {
     }
   };
 
+  await refreshAllSources();
+
   const fetchArticles = (filters = {}) => {
     const conditions = [];
     const params = [];
@@ -714,14 +720,26 @@ async function bootstrap() {
     res.sendFile(path.join(rootDir, 'index.html'));
   });
 
-  app.listen(port, async () => {
-    console.log(`Veille informationnelle disponible sur http://localhost:${port}`);
-    await refreshAllSources();
-    startBackgroundRefresh();
-  });
 }
 
-bootstrap().catch((error) => {
-  console.error('Impossible de démarrer le serveur', error);
-  process.exit(1);
-});
+const bootstrapPromise = bootstrap()
+  .then(() => {
+    if (!isVercelDeployment) {
+      app.listen(port, () => {
+        console.log(`Veille informationnelle disponible sur http://localhost:${port}`);
+        startBackgroundRefresh();
+      });
+    }
+
+    return app;
+  })
+  .catch((error) => {
+    console.error('Impossible de démarrer le serveur', error);
+    if (!isVercelDeployment) {
+      process.exit(1);
+    }
+
+    throw error;
+  });
+
+module.exports = { app, bootstrapPromise };
