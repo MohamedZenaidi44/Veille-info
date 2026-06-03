@@ -1,7 +1,6 @@
 const PREF_KEY = 'veille-info-preferences';
 const HISTORY_KEY = 'veille-info-history';
 const THEME_KEY = 'veille-info-theme';
-const LOCAL_API_BASES = ['http://localhost:3000', 'http://127.0.0.1:3000'];
 
 const CATEGORY_LABELS = {
 	all: 'Toutes les catégories',
@@ -1072,88 +1071,27 @@ async function api(url, options = {}) {
 
 async function requestApi(url, options = {}) {
 	const normalizedPath = url.startsWith('/') ? url : `/${url}`;
-	const candidates = getApiBaseCandidates();
-	let lastResponse = null;
-	let lastError = null;
+	const baseUrl = getApiBaseUrl();
 	const hasBody = typeof options.body !== 'undefined' && options.body !== null;
 	const method = options.method || 'GET';
-
-	for (const [index, baseUrl] of candidates.entries()) {
-		try {
-			const response = await fetch(new URL(normalizedPath, baseUrl).toString(), {
-			method,
-			headers: {
-				Accept: 'application/json',
-				...(hasBody ? { 'Content-Type': 'application/json' } : {}),
-				...(options.headers || {})
-			},
-			body: hasBody ? JSON.stringify(options.body) : undefined
-			});
-
-			lastResponse = response;
-
-			if (response.ok) {
-				return response;
-			}
-
-			if (response.status !== 404 || index === candidates.length - 1) {
-				return response;
-			}
-		} catch (error) {
-			lastError = error;
+	if (!baseUrl) {
+		throw new Error('Impossible de déterminer la base API');
 	}
 
-	}
+	const response = await fetch(new URL(normalizedPath, baseUrl).toString(), {
+		method,
+		headers: {
+			Accept: 'application/json',
+			...(hasBody ? { 'Content-Type': 'application/json' } : {}),
+			...(options.headers || {})
+		},
+		body: hasBody ? JSON.stringify(options.body) : undefined
+	});
 
-	if (lastResponse) {
-		return lastResponse;
-	}
-
-	throw lastError || new Error('Impossible de joindre l’API locale');
+	return response;
 }
 
-function getApiBaseCandidates() {
-	const bases = [];
-	const configuredBase = getConfiguredApiBase();
-	const currentOrigin = getCurrentOrigin();
-	const shouldAvoidCurrentOrigin = isGitHubPagesOrigin();
-
-	if (configuredBase) {
-		bases.push(configuredBase);
-	}
-
-	if (currentOrigin && !shouldAvoidCurrentOrigin && !bases.includes(currentOrigin)) {
-		bases.push(currentOrigin);
-	}
-
-	if (isLocalDevelopmentContext()) {
-		LOCAL_API_BASES.forEach((baseUrl) => {
-			if (!bases.includes(baseUrl)) {
-				bases.push(baseUrl);
-			}
-		});
-	}
-
-	return bases;
-}
-
-function getConfiguredApiBase() {
-	const metaBase = document.querySelector('meta[name="api-base"]')?.getAttribute('content')?.trim();
-	if (metaBase) {
-		return metaBase.replace(/\/$/, '');
-	}
-
-	if (typeof window !== 'undefined') {
-		const globalBase = window.API_BASE_URL || window.__API_BASE__;
-		if (typeof globalBase === 'string' && globalBase.trim()) {
-			return globalBase.trim().replace(/\/$/, '');
-		}
-	}
-
-	return '';
-}
-
-function getCurrentOrigin() {
+function getApiBaseUrl() {
 	if (typeof window === 'undefined' || !window.location) {
 		return '';
 	}
@@ -1163,20 +1101,4 @@ function getCurrentOrigin() {
 	}
 
 	return window.location.origin === 'null' ? '' : window.location.origin;
-}
-
-function isLocalDevelopmentContext() {
-	if (typeof window === 'undefined' || !window.location) {
-		return false;
-	}
-
-	return window.location.protocol === 'file:' || ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
-}
-
-function isGitHubPagesOrigin() {
-	if (typeof window === 'undefined' || !window.location) {
-		return false;
-	}
-
-	return window.location.hostname.endsWith('github.io') || window.location.hostname.includes('github.pages');
 }
