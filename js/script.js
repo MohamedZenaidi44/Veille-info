@@ -1075,16 +1075,19 @@ async function requestApi(url, options = {}) {
 	const candidates = getApiBaseCandidates();
 	let lastResponse = null;
 	let lastError = null;
+	const hasBody = typeof options.body !== 'undefined' && options.body !== null;
+	const method = options.method || 'GET';
 
 	for (const [index, baseUrl] of candidates.entries()) {
 		try {
 			const response = await fetch(new URL(normalizedPath, baseUrl).toString(), {
-		method: options.method || 'GET',
-		headers: {
-			'Content-Type': 'application/json',
-			...(options.headers || {})
-		},
-		body: options.body ? JSON.stringify(options.body) : undefined
+			method,
+			headers: {
+				Accept: 'application/json',
+				...(hasBody ? { 'Content-Type': 'application/json' } : {}),
+				...(options.headers || {})
+			},
+			body: hasBody ? JSON.stringify(options.body) : undefined
 			});
 
 			lastResponse = response;
