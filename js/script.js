@@ -1113,12 +1113,13 @@ function getApiBaseCandidates() {
 	const bases = [];
 	const configuredBase = getConfiguredApiBase();
 	const currentOrigin = getCurrentOrigin();
+	const shouldAvoidCurrentOrigin = isGitHubPagesOrigin();
 
 	if (configuredBase) {
 		bases.push(configuredBase);
 	}
 
-	if (currentOrigin && !bases.includes(currentOrigin)) {
+	if (currentOrigin && !shouldAvoidCurrentOrigin && !bases.includes(currentOrigin)) {
 		bases.push(currentOrigin);
 	}
 
@@ -1167,4 +1168,12 @@ function isLocalDevelopmentContext() {
 	}
 
 	return window.location.protocol === 'file:' || ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+}
+
+function isGitHubPagesOrigin() {
+	if (typeof window === 'undefined' || !window.location) {
+		return false;
+	}
+
+	return window.location.hostname.endsWith('github.io') || window.location.hostname.includes('github.pages');
 }
